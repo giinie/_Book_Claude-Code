@@ -1,0 +1,547 @@
+.dancing-cat-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  padding: 2rem;
+}
+
+.cat-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 300px;
+  height: 300px;
+}
+
+.cat-image {
+  width: 200px;
+  height: 200px;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+  transition: filter 0.3s ease;
+}
+
+/* 기본 댄스 애니메이션 */
+.animated-dance {
+  animation: danceMove 2s ease-in-out infinite;
+}
+
+@keyframes danceMove {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+  }
+  25% {
+    transform: translateY(-20px) rotate(-5deg) scale(1.1);
+  }
+  50% {
+    transform: translateY(0px) rotate(5deg) scale(1);
+  }
+  75% {
+    transform: translateY(-15px) rotate(-3deg) scale(1.05);
+  }
+}
+
+/* 바운스 애니메이션 */
+.animated-bounce {
+  animation: bounceMove 1.5s ease-in-out infinite;
+}
+
+@keyframes bounceMove {
+  0%, 100% {
+    transform: translateY(0px) scaleY(1) scaleX(1);
+  }
+  20% {
+    transform: translateY(-10px) scaleY(1.1) scaleX(0.9);
+  }
+  40% {
+    transform: translateY(-30px) scaleY(0.9) scaleX(1.1);
+  }
+  60% {
+    transform: translateY(-45px) scaleY(1) scaleX(1);
+  }
+  80% {
+    transform: translateY(-20px) scaleY(1.05) scaleX(0.95);
+  }
+}
+
+/* 회전 애니메이션 */
+.animated-spin {
+  animation: spinMove 3s linear infinite;
+}
+
+@keyframes spinMove {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    transform: rotate(90deg) scale(1.1);
+  }
+  50% {
+    transform: rotate(180deg) scale(0.9);
+  }
+  75% {
+    transform: rotate(270deg) scale(1.1);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+/* 흔들기 애니메이션 */
+.animated-shake {
+  animation: shakeMove 0.8s ease-in-out infinite;
+}
+
+@keyframes shakeMove {
+  0%, 100% {
+    transform: translateX(0px) translateY(0px) rotate(0deg);
+  }
+  10% {
+    transform: translateX(-10px) translateY(-5px) rotate(-2deg);
+  }
+  20% {
+    transform: translateX(10px) translateY(5px) rotate(2deg);
+  }
+  30% {
+    transform: translateX(-8px) translateY(-3px) rotate(-1deg);
+  }
+  40% {
+    transform: translateX(8px) translateY(3px) rotate(1deg);
+  }
+  50% {
+    transform: translateX(-5px) translateY(-8px) rotate(-2deg);
+  }
+  60% {
+    transform: translateX(5px) translateY(8px) rotate(2deg);
+  }
+  70% {
+    transform: translateX(-3px) translateY(-5px) rotate(-1deg);
+  }
+  80% {
+    transform: translateX(3px) translateY(5px) rotate(1deg);
+  }
+  90% {
+    transform: translateX(-1px) translateY(-2px) rotate(-0.5deg);
+  }
+}
+
+/* 컨트롤 패널 */
+.control-panel {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.control-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.control-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.control-btn:active {
+  transform: translateY(-1px);
+}
+
+.control-btn.stop {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+}
+
+.control-btn.start {
+  background: linear-gradient(135deg, #00d2d3 0%, #54a0ff 100%);
+}
+
+.animation-controls h3 {
+  color: #333;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.dance-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.dance-btn {
+  background: rgba(255, 255, 255, 0.8);
+  border: 2px solid #ddd;
+  padding: 0.8rem 1.2rem;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.dance-btn:hover {
+  background: rgba(255, 255, 255, 1);
+  border-color: #667eea;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.dance-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: #667eea;
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* 호버 시 고양이 반응 */
+.cat-wrapper:hover .cat-image {
+  filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.4)) brightness(1.1);
+}
+
+/* 성능 최적화를 위한 GPU 가속 */
+.cat-wrapper,
+.cat-image {
+  will-change: transform;
+  transform-origin: center;
+}
+
+/* 애니메이션 일시정지 시 부드러운 전환 */
+.cat-wrapper:not([class*="animated-"]) {
+  transition: transform 0.5s ease;
+}
+
+/* ================= 반응형 디자인 ================= */
+
+/* 태블릿 (768px 이하) */
+@media (max-width: 768px) {
+  .dancing-cat-container {
+    padding: 1rem;
+    gap: 1.5rem;
+  }
+
+  .cat-wrapper {
+    width: 250px;
+    height: 250px;
+  }
+
+  .cat-image {
+    width: 160px;
+    height: 160px;
+  }
+
+  .control-panel {
+    padding: 1.5rem;
+    width: 90%;
+    max-width: 400px;
+  }
+
+  .control-btn {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  .dance-buttons {
+    gap: 0.3rem;
+  }
+
+  .dance-btn {
+    padding: 0.6rem 1rem;
+    font-size: 0.8rem;
+  }
+
+  .animation-controls h3 {
+    font-size: 1rem;
+  }
+
+  /* 태블릿에서 애니메이션 스케일 조정 */
+  @keyframes danceMove {
+    0%, 100% {
+      transform: translateY(0px) rotate(0deg) scale(1);
+    }
+    25% {
+      transform: translateY(-15px) rotate(-4deg) scale(1.08);
+    }
+    50% {
+      transform: translateY(0px) rotate(4deg) scale(1);
+    }
+    75% {
+      transform: translateY(-10px) rotate(-2deg) scale(1.04);
+    }
+  }
+
+  @keyframes bounceMove {
+    0%, 100% {
+      transform: translateY(0px) scaleY(1) scaleX(1);
+    }
+    20% {
+      transform: translateY(-8px) scaleY(1.08) scaleX(0.92);
+    }
+    40% {
+      transform: translateY(-25px) scaleY(0.92) scaleX(1.08);
+    }
+    60% {
+      transform: translateY(-35px) scaleY(1) scaleX(1);
+    }
+    80% {
+      transform: translateY(-15px) scaleY(1.04) scaleX(0.96);
+    }
+  }
+}
+
+/* 모바일 (480px 이하) */
+@media (max-width: 480px) {
+  .dancing-cat-container {
+    padding: 0.5rem;
+    gap: 1rem;
+  }
+
+  .cat-wrapper {
+    width: 200px;
+    height: 200px;
+  }
+
+  .cat-image {
+    width: 130px;
+    height: 130px;
+  }
+
+  .control-panel {
+    padding: 1rem;
+    width: 95%;
+    border-radius: 15px;
+  }
+
+  .control-btn {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  .dance-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .dance-btn {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.7rem;
+    border-radius: 20px;
+  }
+
+  .animation-controls h3 {
+    font-size: 0.9rem;
+    margin-bottom: 0.8rem;
+  }
+
+  /* 모바일에서 더 부드러운 애니메이션 */
+  @keyframes danceMove {
+    0%, 100% {
+      transform: translateY(0px) rotate(0deg) scale(1);
+    }
+    25% {
+      transform: translateY(-10px) rotate(-3deg) scale(1.05);
+    }
+    50% {
+      transform: translateY(0px) rotate(3deg) scale(1);
+    }
+    75% {
+      transform: translateY(-8px) rotate(-2deg) scale(1.03);
+    }
+  }
+
+  @keyframes bounceMove {
+    0%, 100% {
+      transform: translateY(0px) scaleY(1) scaleX(1);
+    }
+    20% {
+      transform: translateY(-6px) scaleY(1.06) scaleX(0.94);
+    }
+    40% {
+      transform: translateY(-20px) scaleY(0.94) scaleX(1.06);
+    }
+    60% {
+      transform: translateY(-30px) scaleY(1) scaleX(1);
+    }
+    80% {
+      transform: translateY(-12px) scaleY(1.03) scaleX(0.97);
+    }
+  }
+
+  @keyframes shakeMove {
+    0%, 100% {
+      transform: translateX(0px) translateY(0px) rotate(0deg);
+    }
+    25% {
+      transform: translateX(-6px) translateY(-3px) rotate(-1deg);
+    }
+    50% {
+      transform: translateX(6px) translateY(3px) rotate(1deg);
+    }
+    75% {
+      transform: translateX(-4px) translateY(-2px) rotate(-0.5deg);
+    }
+  }
+}
+
+/* 작은 모바일 (320px 이하) */
+@media (max-width: 320px) {
+  .dancing-cat-container {
+    padding: 0.3rem;
+  }
+
+  .cat-wrapper {
+    width: 180px;
+    height: 180px;
+  }
+
+  .cat-image {
+    width: 110px;
+    height: 110px;
+  }
+
+  .control-panel {
+    padding: 0.8rem;
+  }
+
+  .control-btn {
+    padding: 0.6rem 1rem;
+    font-size: 0.8rem;
+  }
+
+  .dance-btn {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.65rem;
+  }
+
+  .animation-controls h3 {
+    font-size: 0.8rem;
+  }
+}
+
+/* 큰 화면 (1200px 이상) */
+@media (min-width: 1200px) {
+  .dancing-cat-container {
+    padding: 3rem;
+    gap: 3rem;
+  }
+
+  .cat-wrapper {
+    width: 350px;
+    height: 350px;
+  }
+
+  .cat-image {
+    width: 250px;
+    height: 250px;
+  }
+
+  .control-panel {
+    padding: 2.5rem;
+    max-width: 600px;
+  }
+
+  .control-btn {
+    padding: 1.2rem 2.5rem;
+    font-size: 1.3rem;
+  }
+
+  .dance-buttons {
+    gap: 1rem;
+  }
+
+  .dance-btn {
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  .animation-controls h3 {
+    font-size: 1.2rem;
+  }
+}
+
+/* 터치 디바이스 최적화 */
+@media (hover: none) and (pointer: coarse) {
+  .control-btn,
+  .dance-btn {
+    min-height: 44px; /* 터치 타겟 최소 크기 */
+  }
+
+  .dance-btn:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+  }
+
+  .control-btn:active {
+    transform: translateY(0px) scale(0.95);
+    transition: transform 0.1s ease;
+  }
+}
+
+/* 고대비 모드 지원 */
+@media (prefers-contrast: high) {
+  .control-panel {
+    background: white;
+    border: 3px solid black;
+  }
+
+  .control-btn {
+    background: black;
+    color: white;
+    border: 2px solid white;
+  }
+
+  .dance-btn {
+    background: white;
+    color: black;
+    border: 2px solid black;
+  }
+
+  .dance-btn.active {
+    background: black;
+    color: white;
+  }
+}
+
+/* 움직임 감소 설정 존중 */
+@media (prefers-reduced-motion: reduce) {
+  .animated-dance,
+  .animated-bounce,
+  .animated-spin,
+  .animated-shake {
+    animation: none;
+  }
+
+  .cat-wrapper {
+    transition: transform 0.3s ease;
+  }
+
+  .cat-wrapper.animated-dance {
+    transform: scale(1.05);
+  }
+
+  .cat-wrapper.animated-bounce {
+    transform: translateY(-10px);
+  }
+
+  .cat-wrapper.animated-spin {
+    transform: rotate(15deg);
+  }
+
+  .cat-wrapper.animated-shake {
+    transform: translateX(5px);
+  }
+}
