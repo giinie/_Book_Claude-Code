@@ -1,94 +1,69 @@
-/**
- * Generate Documentation Tool
- * Generates markdown documentation for analyzed codebase
- */
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import { getParser } from '../parsers/index.js';
+import { DocumentationItem, SupportedLanguage } from '../types/index.js';
+import { generateMarkdown } from '../generators/markdown.js';
 
-import { z } from 'zod';
-import type { DocumentationOutput } from '../types/index.js';
-import { analyzeCodebase } from './analyzeCodebase.js';
-import { MarkdownGenerator } from '../generators/index.js';
-import { writeFileContent, isDirectory } from '../utils/fileSystem.js';
-import { logger } from '../utils/logger.js';
-import { join } from 'path';
-
-export const GenerateDocumentationArgsSchema = z.object({
-  path: z.string().describe('Path to the codebase directory or file'),
-  outputPath: z
-    .string()
-    .optional()
-    .describe('Optional output path for the documentation file'),
-  includePrivate: z
-    .boolean()
-    .optional()
-    .default(false)
-    .describe('Include private functions and classes'),
-  format: z
-    .enum(['markdown'])
-    .optional()
-    .default('markdown')
-    .describe('Documentation format'),
-});
-
-export type GenerateDocumentationArgs = z.infer<
-  typeof GenerateDocumentationArgsSchema
->;
+const LANGUAGE_EXTENSIONS: Record<string, SupportedLanguage> = {
+  '.ts': 'typescript',
+  '.tsx': 'typescript',
+  '.js': 'javascript',
+  '.jsx': 'javascript',
+  '.py': 'python'
+};
 
 export async function generateDocumentation(
-  args: GenerateDocumentationArgs
-): Promise<DocumentationOutput> {
-  try {
-    logger.info(`Starting documentation generation: ${args.path}`);
+  dirPath: string,
+  outputPath?: string
+): Promise<string> {
+  const files = await getAllFiles(dirPath);
+  const allItems: DocumentationItem[] = [];
 
-    // Analyze the codebase first
-    const analysis = await analyzeCodebase({
-      path: args.path,
-    });
+  for (const file of files) {
+    const ext = path.extname(file);
+    const language = LANGUAGE_EXTENSIONS[ext];
+    
+    if (!language) continue;
 
-    // Generate markdown documentation
-    const generator = new MarkdownGenerator();
-    const isDir = await isDirectory(args.path);
-
-    let content: string;
-    let outputPath: string;
-
-    if (isDir) {
-      // Generate comprehensive codebase documentation
-      content = generator.generateCodebaseDocumentation(analysis);
-      outputPath =
-        args.outputPath || join(args.path, 'DOCUMENTATION.md');
-    } else {
-      // Generate single file documentation
-      if (analysis.files.length === 0) {
-        throw new Error('No files were analyzed');
-      }
-      content = generator.generateFileDocumentation(analysis.files[0]);
-      outputPath =
-        args.outputPath ||
-        args.path.replace(/\.(ts|js|py)$/, '.md');
+    try {
+      const content = await fs.readFile(file, 'utf-8');
+      const parser = getParser(language);
+      const { items } = parser.extractDocumentation(file, content);
+      allItems.push(...items);
+    } catch (error) {
+      console.error(`Error processing ${file}:`, error);
     }
-
-    // Write documentation to file if output path is provided
-    if (outputPath) {
-      await writeFileContent(outputPath, content);
-      logger.info(`Documentation written to: ${outputPath}`);
-    }
-
-    const result = generator.createDocumentationOutput(
-      outputPath || args.path,
-      content
-    );
-
-    logger.info('Documentation generation completed successfully');
-    return result;
-  } catch (error) {
-    logger.error('Documentation generation failed', error);
-    throw error;
   }
+
+  const projectName = path.basename(dirPath);
+  const markdown = generateMarkdown(allItems, projectName);
+
+  if (outputPath) {
+    await fs.writeFile(outputPath, markdown, 'utf-8');
+  }
+
+  return markdown;
 }
 
-export const generateDocumentationToolDefinition = {
-  name: 'generate_documentation',
-  description:
-    'Generates comprehensive markdown documentation for a codebase or individual file, including all functions, classes, and their details',
-  inputSchema: GenerateDocumentationArgsSchema,
-};
+async function getAllFiles(dirPath: string, files: string[] = []): Promise<string[]> {
+  const entries = await fs.readdir(dirPath, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = path.join(dirPath, entry.name);
+    
+    if (entry.name === 'node_modules' || entry.name === 'dist' || entry.name === '.git') {
+      continue;
+    }
+
+    if (entry.isDirectory()) {
+      await getAllFiles(fullPath, files);
+    } else if (entry.isFile()) {
+      const ext = path.extname(entry.name);
+      if (LANGUAGE_EXTENSIONS[ext]) {
+        files.push(fullPath);
+      }
+    }
+  }
+
+  return files;
+}

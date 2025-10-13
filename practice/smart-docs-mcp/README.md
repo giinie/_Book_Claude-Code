@@ -1,19 +1,19 @@
-# Smart Docs MCP Server
+# Smart Docs MCP
 
-Production-ready MCP server for intelligent codebase analysis and documentation generation.
+A production-ready Model Context Protocol (MCP) server for intelligent codebase analysis and documentation generation.
 
 ## Features
 
-- 🔍 **Codebase Analysis**: Comprehensive analysis of TypeScript, JavaScript, and Python codebases
-- 📝 **Documentation Generation**: Automatic generation of well-structured markdown documentation
-- 🔎 **Missing Docs Detection**: Identifies undocumented code with severity levels (critical, medium, low)
-- 💡 **Improvement Suggestions**: AI-powered suggestions to enhance existing documentation
+- **Analyze Codebase**: Get comprehensive statistics about your documentation coverage
+- **Generate Documentation**: Automatically create markdown documentation from your code
+- **Detect Missing Docs**: Find undocumented functions, classes, and methods with severity levels
+- **Suggest Improvements**: Get actionable suggestions to improve existing documentation
 
 ## Supported Languages
 
-- TypeScript (.ts, .tsx)
-- JavaScript (.js, .jsx, .mjs, .cjs)
-- Python (.py)
+- TypeScript (`.ts`, `.tsx`)
+- JavaScript (`.js`, `.jsx`)
+- Python (`.py`)
 
 ## Installation
 
@@ -24,19 +24,16 @@ npm run build
 
 ## Usage
 
-### As an MCP Server
+### As MCP Server
 
-Add to your Claude Desktop configuration:
+Add to your MCP client configuration:
 
 ```json
 {
   "mcpServers": {
     "smart-docs": {
       "command": "node",
-      "args": ["/path/to/smart-docs-mcp/dist/index.js"],
-      "env": {
-        "LOG_LEVEL": "info"
-      }
+      "args": ["/path/to/smart-docs-mcp/dist/index.js"]
     }
   }
 }
@@ -44,239 +41,135 @@ Add to your Claude Desktop configuration:
 
 ### Available Tools
 
-#### 1. `analyze_codebase`
+#### 1. analyze_codebase
 
-Analyzes a codebase and returns comprehensive structure information.
+Analyzes a codebase and returns documentation statistics.
 
 **Parameters:**
-- `path` (string, required): Path to the codebase directory or file
-- `includePatterns` (string[], optional): Glob patterns for files to include
-- `excludePatterns` (string[], optional): Glob patterns for files to exclude
-- `maxDepth` (number, optional): Maximum directory depth to analyze
-
-**Example:**
-```json
-{
-  "path": "./src",
-  "includePatterns": ["**/*.ts"],
-  "excludePatterns": ["**/*.test.ts"]
-}
-```
+- `directory` (string, required): Absolute path to the directory to analyze
 
 **Returns:**
-```typescript
-{
-  rootPath: string;
-  files: FileAnalysis[];
-  summary: {
-    totalFiles: number;
-    totalFunctions: number;
-    totalClasses: number;
-    totalLines: number;
-    languages: Record<Language, number>;
-  };
-  analyzedAt: string;
-}
-```
-
-#### 2. `generate_documentation`
-
-Generates comprehensive markdown documentation for a codebase or individual file.
-
-**Parameters:**
-- `path` (string, required): Path to the codebase directory or file
-- `outputPath` (string, optional): Optional output path for the documentation file
-- `includePrivate` (boolean, optional, default: false): Include private functions and classes
-- `format` (enum: 'markdown', optional, default: 'markdown'): Documentation format
-
-**Example:**
 ```json
 {
-  "path": "./src",
-  "outputPath": "./docs/API.md",
-  "includePrivate": false
+  "totalFiles": 42,
+  "filesByLanguage": {
+    "typescript": 30,
+    "javascript": 10,
+    "python": 2
+  },
+  "totalFunctions": 156,
+  "totalClasses": 23,
+  "documentedFunctions": 120,
+  "documentedClasses": 18,
+  "documentationCoverage": 77
 }
 ```
 
-**Returns:**
-```typescript
-{
-  filePath: string;
-  content: string;
-  format: 'markdown';
-  generatedAt: string;
-}
-```
+#### 2. generate_documentation
 
-#### 3. `detect_missing_docs`
-
-Detects missing documentation in code with severity levels.
+Generates markdown documentation for your codebase.
 
 **Parameters:**
-- `path` (string, required): Path to the codebase directory or file
-- `severity` (array, optional): Filter by severity levels: 'critical', 'medium', 'low'
-- `includeTypes` (array, optional): Types to detect: 'function', 'class', 'parameter'
+- `directory` (string, required): Absolute path to the directory to document
+- `outputPath` (string, optional): Path to save the documentation file
+
+**Returns:** Markdown formatted documentation
+
+#### 3. detect_missing_docs
+
+Detects undocumented code elements with severity levels.
+
+**Parameters:**
+- `directory` (string, required): Absolute path to the directory to check
+
+**Returns:**
+```json
+[
+  {
+    "type": "class",
+    "name": "UserController",
+    "file": "/path/to/file.ts",
+    "line": 15,
+    "severity": "critical",
+    "reason": "Missing documentation for class 'UserController'"
+  }
+]
+```
 
 **Severity Levels:**
-- **Critical**: Public APIs, complex functions (complexity > 10), large classes (> 5 methods)
-- **Medium**: Internal functions and classes
-- **Low**: Private/helper functions
+- **Critical**: Public classes, interfaces, and exported functions
+- **Medium**: Public methods and commonly used functions
+- **Low**: Private methods and internal utilities
 
-**Example:**
-```json
-{
-  "path": "./src",
-  "severity": ["critical", "medium"],
-  "includeTypes": ["function", "class"]
-}
-```
-
-**Returns:**
-```typescript
-{
-  missing: MissingDoc[];
-  summary: {
-    total: number;
-    bySeverity: Record<Severity, number>;
-    byType: Record<string, number>;
-  };
-}
-```
-
-#### 4. `suggest_improvements`
+#### 4. suggest_improvements
 
 Analyzes existing documentation and suggests improvements.
 
 **Parameters:**
-- `path` (string, required): Path to the codebase directory or file
-- `types` (array, optional): Types of improvements: 'structure', 'clarity', 'completeness', 'examples'
-
-**Improvement Types:**
-- **Structure**: Add proper formatting with parameter and return descriptions
-- **Clarity**: Enhance brief documentation with more detail
-- **Completeness**: Document missing parameters
-- **Examples**: Add usage examples
-
-**Example:**
-```json
-{
-  "path": "./src",
-  "types": ["structure", "examples"]
-}
-```
+- `directory` (string, required): Absolute path to the directory to analyze
 
 **Returns:**
-```typescript
-{
-  improvements: Improvement[];
-  summary: {
-    total: number;
-    byType: Record<string, number>;
-  };
-}
+```json
+[
+  {
+    "file": "/path/to/file.ts",
+    "line": 42,
+    "type": "missing_param_docs",
+    "severity": "medium",
+    "message": "Function 'processData' documentation missing parameter details",
+    "suggestion": "Add @param tags for: data, options"
+  }
+]
 ```
 
-## Development
-
-### Project Structure
+## Project Structure
 
 ```
 smart-docs-mcp/
 ├── src/
-│   ├── index.ts              # Main MCP server entry point
-│   ├── types/                # TypeScript type definitions
-│   │   └── index.ts
-│   ├── parsers/              # Tree-sitter based parsers
-│   │   ├── baseParser.ts
-│   │   ├── typescriptParser.ts
-│   │   ├── pythonParser.ts
-│   │   └── index.ts
-│   ├── generators/           # Documentation generators
-│   │   ├── markdownGenerator.ts
-│   │   └── index.ts
-│   ├── tools/                # MCP tools implementation
+│   ├── index.ts           # MCP server entry point
+│   ├── types/             # TypeScript type definitions
+│   ├── parsers/           # Language-specific parsers
+│   │   ├── base.ts        # Base parser class
+│   │   ├── typescript.ts  # TypeScript/JavaScript parser
+│   │   ├── python.ts      # Python parser
+│   │   └── index.ts       # Parser factory
+│   ├── tools/             # MCP tool implementations
 │   │   ├── analyzeCodebase.ts
 │   │   ├── generateDocumentation.ts
 │   │   ├── detectMissingDocs.ts
-│   │   ├── suggestImprovements.ts
-│   │   └── index.ts
-│   └── utils/                # Utility functions
-│       ├── logger.ts
-│       ├── errors.ts
-│       ├── fileSystem.ts
-│       └── index.ts
-├── tests/                    # Test files
-├── dist/                     # Compiled output
+│   │   └── suggestImprovements.ts
+│   └── generators/        # Documentation generators
+│       └── markdown.ts    # Markdown generator
 ├── package.json
 ├── tsconfig.json
 └── README.md
 ```
 
-### Build
+## Development
 
 ```bash
+# Install dependencies
+npm install
+
+# Build
 npm run build
+
+# Watch mode
+npm run watch
+
+# Run
+npm start
 ```
-
-### Development Mode
-
-```bash
-npm run dev
-```
-
-### Testing
-
-```bash
-npm test
-```
-
-### Linting
-
-```bash
-npm run lint
-```
-
-## Environment Variables
-
-- `LOG_LEVEL`: Set logging level (debug, info, warn, error). Default: info
 
 ## Error Handling
 
-The server implements comprehensive error handling with custom error types:
-
-- `ParserError`: Errors during code parsing
-- `FileSystemError`: File system operation errors
-- `ValidationError`: Input validation errors
-- `ConfigurationError`: Configuration-related errors
-
-All errors are properly logged and returned to the client with detailed information.
-
-## Performance Considerations
-
-- **Parser Caching**: Parsers are cached per language for better performance
-- **Incremental Analysis**: Large codebases are analyzed file by file
-- **Efficient Tree-sitter**: Uses tree-sitter for fast and accurate parsing
-- **Stream Processing**: Handles large files efficiently
+All tools include comprehensive error handling:
+- Invalid directory paths are caught and reported
+- Parse errors are logged without stopping analysis
+- Malformed code is handled gracefully
+- All errors return descriptive messages
 
 ## License
 
 MIT
-
-## Author
-
-Gi-in Jeong
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## Changelog
-
-### Version 1.0.0
-- Initial release
-- Support for TypeScript, JavaScript, and Python
-- Four tools: analyze_codebase, generate_documentation, detect_missing_docs, suggest_improvements
-- Tree-sitter based parsing
-- Comprehensive error handling
-- Markdown documentation generation
-- Severity-based missing documentation detection

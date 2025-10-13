@@ -1,197 +1,184 @@
 #!/usr/bin/env node
 
-/**
- * Smart Docs MCP Server
- * Production-ready MCP server for codebase analysis and documentation generation
- */
-
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
-  ErrorCode,
-  McpError,
+  Tool,
 } from '@modelcontextprotocol/sdk/types.js';
+import { analyzeCodebase } from './tools/analyzeCodebase.js';
+import { generateDocumentation } from './tools/generateDocumentation.js';
+import { detectMissingDocs } from './tools/detectMissingDocs.js';
+import { suggestImprovements } from './tools/suggestImprovements.js';
 
-import {
-  analyzeCodebase,
-  analyzeCodebaseToolDefinition,
-} from './tools/analyzeCodebase.js';
-import {
-  generateDocumentation,
-  generateDocumentationToolDefinition,
-} from './tools/generateDocumentation.js';
-import {
-  detectMissingDocs,
-  detectMissingDocsToolDefinition,
-} from './tools/detectMissingDocs.js';
-import {
-  suggestImprovements,
-  suggestImprovementsToolDefinition,
-} from './tools/suggestImprovements.js';
-
-import { handleError } from './utils/errors.js';
-import { logger, LogLevel } from './utils/logger.js';
-
-// Configure logger based on environment
-const logLevel = process.env.LOG_LEVEL || 'info';
-logger.setLevel(
-  logLevel === 'debug'
-    ? LogLevel.DEBUG
-    : logLevel === 'warn'
-    ? LogLevel.WARN
-    : logLevel === 'error'
-    ? LogLevel.ERROR
-    : LogLevel.INFO
+const server = new Server(
+  {
+    name: 'smart-docs-mcp',
+    version: '1.0.0',
+  },
+  {
+    capabilities: {
+      tools: {},
+    },
+  }
 );
 
-/**
- * Create and configure the MCP server
- */
-function createServer(): Server {
-  const server = new Server(
-    {
-      name: 'smart-docs-mcp',
-      version: '1.0.0',
-    },
-    {
-      capabilities: {
-        tools: {},
+const tools: Tool[] = [
+  {
+    name: 'analyze_codebase',
+    description: 'Analyzes a codebase and returns statistics about documentation coverage, including total files, functions, classes, and documentation percentage. Supports TypeScript, JavaScript, and Python.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        directory: {
+          type: 'string',
+          description: 'Absolute path to the directory to analyze',
+        },
       },
-    }
-  );
+      required: ['directory'],
+    },
+  },
+  {
+    name: 'generate_documentation',
+    description: 'Generates comprehensive markdown documentation for a codebase, including all classes, interfaces, functions, and methods with their parameters and return types.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        directory: {
+          type: 'string',
+          description: 'Absolute path to the directory to document',
+        },
+        outputPath: {
+          type: 'string',
+          description: 'Optional absolute path where to save the documentation file',
+        },
+      },
+      required: ['directory'],
+    },
+  },
+  {
+    name: 'detect_missing_docs',
+    description: 'Detects all functions, classes, methods, and interfaces that are missing documentation. Returns items sorted by severity (critical, medium, low).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        directory: {
+          type: 'string',
+          description: 'Absolute path to the directory to check',
+        },
+      },
+      required: ['directory'],
+    },
+  },
+  {
+    name: 'suggest_improvements',
+    description: 'Analyzes existing documentation and suggests improvements such as missing parameter descriptions, missing return value documentation, or incomplete descriptions. Returns suggestions sorted by severity.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        directory: {
+          type: 'string',
+          description: 'Absolute path to the directory to analyze',
+        },
+      },
+      required: ['directory'],
+    },
+  },
+];
 
-  // List available tools
-  server.setRequestHandler(ListToolsRequestSchema, async () => {
-    logger.debug('Listing available tools');
+server.setRequestHandler(ListToolsRequestSchema, async () => ({
+  tools,
+}));
 
-    return {
-      tools: [
-        analyzeCodebaseToolDefinition,
-        generateDocumentationToolDefinition,
-        detectMissingDocsToolDefinition,
-        suggestImprovementsToolDefinition,
-      ],
-    };
-  });
-
-  // Handle tool calls
-  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  try {
     const { name, arguments: args } = request.params;
 
-    logger.info(`Tool called: ${name}`);
-    logger.debug(`Arguments: ${JSON.stringify(args)}`);
-
-    try {
-      switch (name) {
-        case 'analyze_codebase': {
-          const result = await analyzeCodebase(args as any);
-          return {
-            content: [
-              {
-                type: 'text',
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-          };
-        }
-
-        case 'generate_documentation': {
-          const result = await generateDocumentation(args as any);
-          return {
-            content: [
-              {
-                type: 'text',
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-          };
-        }
-
-        case 'detect_missing_docs': {
-          const result = await detectMissingDocs(args as any);
-          return {
-            content: [
-              {
-                type: 'text',
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-          };
-        }
-
-        case 'suggest_improvements': {
-          const result = await suggestImprovements(args as any);
-          return {
-            content: [
-              {
-                type: 'text',
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-          };
-        }
-
-        default:
-          throw new McpError(
-            ErrorCode.MethodNotFound,
-            `Unknown tool: ${name}`
-          );
+    switch (name) {
+      case 'analyze_codebase': {
+        const { directory } = args as { directory: string };
+        const analysis = await analyzeCodebase(directory);
+        
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(analysis, null, 2),
+            },
+          ],
+        };
       }
-    } catch (error) {
-      logger.error(`Tool execution failed: ${name}`, error);
 
-      const errorInfo = handleError(error);
+      case 'generate_documentation': {
+        const { directory, outputPath } = args as {
+          directory: string;
+          outputPath?: string;
+        };
+        const markdown = await generateDocumentation(directory, outputPath);
+        
+        return {
+          content: [
+            {
+              type: 'text',
+              text: markdown,
+            },
+          ],
+        };
+      }
 
-      throw new McpError(
-        ErrorCode.InternalError,
-        `Tool execution failed: ${errorInfo.error}`,
-        errorInfo.details
-      );
+      case 'detect_missing_docs': {
+        const { directory } = args as { directory: string };
+        const missingDocs = await detectMissingDocs(directory);
+        
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(missingDocs, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'suggest_improvements': {
+        const { directory } = args as { directory: string };
+        const improvements = await suggestImprovements(directory);
+        
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(improvements, null, 2),
+            },
+          ],
+        };
+      }
+
+      default:
+        throw new Error(`Unknown tool: ${name}`);
     }
-  });
-
-  // Error handling
-  server.onerror = (error) => {
-    logger.error('Server error occurred', error);
-  };
-
-  return server;
-}
-
-/**
- * Main entry point
- */
-async function main() {
-  logger.info('Starting Smart Docs MCP Server...');
-
-  try {
-    const server = createServer();
-    const transport = new StdioServerTransport();
-
-    await server.connect(transport);
-
-    logger.info('Smart Docs MCP Server running on stdio');
-    logger.info('Available tools: analyze_codebase, generate_documentation, detect_missing_docs, suggest_improvements');
-
-    // Handle graceful shutdown
-    process.on('SIGINT', async () => {
-      logger.info('Received SIGINT, shutting down gracefully...');
-      await server.close();
-      process.exit(0);
-    });
-
-    process.on('SIGTERM', async () => {
-      logger.info('Received SIGTERM, shutting down gracefully...');
-      await server.close();
-      process.exit(0);
-    });
   } catch (error) {
-    logger.error('Failed to start server', error);
-    process.exit(1);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `Error: ${errorMessage}`,
+        },
+      ],
+      isError: true,
+    };
   }
+});
+
+async function main() {
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+  console.error('Smart Docs MCP Server running on stdio');
 }
 
-// Start the server
-main();
+main().catch((error) => {
+  console.error('Fatal error:', error);
+  process.exit(1);
+});

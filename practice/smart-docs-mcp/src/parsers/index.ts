@@ -1,38 +1,19 @@
-/**
- * Parser factory and exports
- */
+import { TypeScriptParser } from './typescript.js';
+import { PythonParser } from './python.js';
+import { SupportedLanguage } from '../types/index.js';
+import { BaseParser } from './base.js';
 
-import { TypeScriptParser } from './typescriptParser.js';
-import { PythonParser } from './pythonParser.js';
-import type { Language } from '../types/index.js';
-import { BaseParser } from './baseParser.js';
-import { ConfigurationError } from '../utils/errors.js';
-
-export { BaseParser } from './baseParser.js';
-export { TypeScriptParser } from './typescriptParser.js';
-export { PythonParser } from './pythonParser.js';
-
-const parserCache = new Map<Language, BaseParser>();
-
-export function getParser(language: Language): BaseParser {
-  if (parserCache.has(language)) {
-    return parserCache.get(language)!;
-  }
-
-  let parser: BaseParser;
-
+export function getParser(language: SupportedLanguage): BaseParser {
   switch (language) {
     case 'typescript':
+      return new TypeScriptParser(true);
     case 'javascript':
-      parser = new TypeScriptParser();
-      break;
+      return new TypeScriptParser(false);
     case 'python':
-      parser = new PythonParser();
-      break;
+      return new PythonParser();
     default:
-      throw new ConfigurationError(`Unsupported language: ${language}`);
+      throw new Error(`Unsupported language: ${language}`);
   }
-
-  parserCache.set(language, parser);
-  return parser;
 }
+
+export { TypeScriptParser, PythonParser, BaseParser };

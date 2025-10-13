@@ -1,133 +1,45 @@
-/**
- * Core types for smart-docs-mcp server
- */
-
-export type Language = 'typescript' | 'javascript' | 'python';
-
-export type Severity = 'critical' | 'medium' | 'low';
-
-export interface CodeNode {
-  type: string;
-  name: string;
-  startLine: number;
-  endLine: number;
-  text: string;
-  children?: CodeNode[];
-}
-
-export interface FunctionInfo {
-  name: string;
-  parameters: string[];
-  returnType?: string;
-  docstring?: string;
-  startLine: number;
-  endLine: number;
-  complexity?: number;
-}
-
-export interface ClassInfo {
-  name: string;
-  methods: FunctionInfo[];
-  properties: string[];
-  docstring?: string;
-  startLine: number;
-  endLine: number;
-}
-
-export interface FileAnalysis {
-  filePath: string;
-  language: Language;
-  functions: FunctionInfo[];
-  classes: ClassInfo[];
-  imports: string[];
-  exports: string[];
-  totalLines: number;
-  codeLines: number;
-  commentLines: number;
-}
-
 export interface CodebaseAnalysis {
-  rootPath: string;
-  files: FileAnalysis[];
-  summary: {
-    totalFiles: number;
-    totalFunctions: number;
-    totalClasses: number;
-    totalLines: number;
-    languages: Record<Language, number>;
-  };
-  analyzedAt: string;
+  totalFiles: number;
+  filesByLanguage: Record<string, number>;
+  totalFunctions: number;
+  totalClasses: number;
+  documentedFunctions: number;
+  documentedClasses: number;
+  documentationCoverage: number;
 }
 
-export interface MissingDoc {
-  filePath: string;
-  type: 'function' | 'class' | 'parameter';
+export interface DocumentationItem {
+  type: 'function' | 'class' | 'method' | 'interface' | 'variable';
   name: string;
+  file: string;
   line: number;
-  severity: Severity;
-  reason: string;
+  documentation?: string;
+  parameters?: Array<{ name: string; type?: string }>;
+  returnType?: string;
+  scope?: string;
 }
 
-export interface MissingDocsReport {
-  missing: MissingDoc[];
-  summary: {
-    total: number;
-    bySeverity: Record<Severity, number>;
-    byType: Record<string, number>;
-  };
+export interface MissingDocItem {
+  type: 'function' | 'class' | 'method' | 'interface';
+  name: string;
+  file: string;
+  line: number;
+  severity: 'critical' | 'medium' | 'low';
+  reason: string;
 }
 
 export interface Improvement {
-  filePath: string;
+  file: string;
   line: number;
-  type: 'structure' | 'clarity' | 'completeness' | 'examples';
-  current: string;
-  suggested: string;
-  reason: string;
+  type: 'missing_param_docs' | 'missing_return_docs' | 'incomplete_description' | 'missing_examples';
+  severity: 'critical' | 'medium' | 'low';
+  message: string;
+  suggestion: string;
 }
 
-export interface ImprovementSuggestions {
-  improvements: Improvement[];
-  summary: {
-    total: number;
-    byType: Record<string, number>;
-  };
-}
+export type SupportedLanguage = 'typescript' | 'javascript' | 'python';
 
-export interface DocumentationOutput {
-  filePath: string;
-  content: string;
-  format: 'markdown';
-  generatedAt: string;
-}
-
-export interface ParserConfig {
-  language: Language;
-  extensions: string[];
-  parser: any;
-}
-
-export interface AnalyzeOptions {
-  path: string;
-  includePatterns?: string[];
-  excludePatterns?: string[];
-  maxDepth?: number;
-}
-
-export interface GenerateDocsOptions {
-  path: string;
-  outputPath?: string;
-  includePrivate?: boolean;
-  format?: 'markdown';
-}
-
-export interface DetectMissingOptions {
-  path: string;
-  severity?: Severity[];
-  includeTypes?: Array<'function' | 'class' | 'parameter'>;
-}
-
-export interface SuggestImprovementsOptions {
-  path: string;
-  types?: Array<'structure' | 'clarity' | 'completeness' | 'examples'>;
+export interface ParseResult {
+  items: DocumentationItem[];
+  errors: string[];
 }
